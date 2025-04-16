@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# GitHub Repository Analyzer
 
-## Getting Started
+A Next.js static application to analyze public GitHub repositories with detailed statistics and visualizations.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+### Core Functionality
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **GitHub URL Analysis**  
+  Input a public repository URL to:
+  - Display summary metadata (name, description, primary language)
+  - View engagement metrics (stars, forks, watchers)
+  - Show last update date
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Branch Insights
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- List available branches
+- Commit history per branch:
+  - Commit messages
+  - Author details
+  - Timestamp
+  - Direct commit links
 
-## Learn More
+### Data Visualizations
 
-To learn more about Next.js, take a look at the following resources:
+- Language distribution (pie chart)
+- Commit activity (monthly histogram)
+- Key metrics:
+  - Total branches
+  - Release count
+  - Update frequency
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### GitHub Integration
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- OAuth authentication for:
+  - Higher API rate limits
+  - Private repository access
+  - User session management
 
-## Deploy on Vercel
+### Usage
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Input GitHub URL
+Example: https://github.com/vercel/next.js
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Explore Dashboard
+
+"Summary" tab for repository overview
+
+"Branches" tab for commit history
+
+"Analytics" tab for data visualizations
+
+GitHub Login (optional)
+Click "Connect GitHub" to:
+
+Access private repositories
+
+Increase API request limits
