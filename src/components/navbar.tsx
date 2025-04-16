@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { Search, BarChart2, Home } from "lucide-react"
-import AuthStatus from "@/components/auth-status"
-import ApiStatus from "@/components/api-status"
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Search, BarChart2, Home } from "lucide-react";
+import AuthStatus from "@/components/auth-status";
+import ApiStatus from "@/components/api-status";
 
 export default function Navbar() {
-  const pathname = usePathname()
+  const pathname = usePathname();
 
   return (
     <header className="border-b">
@@ -21,7 +21,9 @@ export default function Navbar() {
             <Link
               href="/"
               className={`flex items-center gap-2 text-sm font-medium ${
-                pathname === "/" ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+                pathname === "/"
+                  ? "text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               <Home className="h-4 w-4" />
@@ -30,7 +32,9 @@ export default function Navbar() {
             <Link
               href="/search"
               className={`flex items-center gap-2 text-sm font-medium ${
-                pathname === "/search" ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+                pathname === "/search"
+                  ? "text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               <Search className="h-4 w-4" />
@@ -40,9 +44,9 @@ export default function Navbar() {
         </div>
         <div className="flex items-center gap-4">
           <ApiStatus />
-          <AuthStatus />
+          {/* <AuthStatus /> */}
         </div>
       </div>
     </header>
-  )
+  );
 }
