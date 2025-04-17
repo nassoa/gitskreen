@@ -1,24 +1,44 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { useSession } from "next-auth/react"
-import { useToast } from "@/components/ui/use-toast"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Slider } from "@/components/ui/slider"
-import { Checkbox } from "@/components/ui/checkbox"
-import { SearchIcon } from "lucide-react"
-import { fetchWithAuth } from "@/lib/github"
-import AuthStatus from "@/components/auth-status"
-import ApiStatus from "@/components/api-status"
-import SearchResults from "@/components/search-results"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import * as z from "zod"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { useToast } from "@/components/ui/use-toast";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Slider } from "@/components/ui/slider";
+import { Checkbox } from "@/components/ui/checkbox";
+import { SearchIcon } from "lucide-react";
+import { fetchWithAuth } from "@/lib/github";
+import AuthStatus from "@/components/auth-status";
+import ApiStatus from "@/components/api-status";
+import SearchResults from "@/components/search-results";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
 
 // Langages de programmation populaires
 const popularLanguages = [
@@ -34,27 +54,29 @@ const popularLanguages = [
   "Swift",
   "Kotlin",
   "Rust",
-]
+];
 
 // Schéma de validation du formulaire
 const searchFormSchema = z.object({
   query: z.string().min(1, "Veuillez entrer un terme de recherche"),
   language: z.string().optional(),
   minStars: z.number().min(0).default(0),
-  sort: z.enum(["stars", "forks", "updated", "help-wanted-issues"]).default("stars"),
+  sort: z
+    .enum(["stars", "forks", "updated", "help-wanted-issues"])
+    .default("stars"),
   order: z.enum(["desc", "asc"]).default("desc"),
   includeArchived: z.boolean().default(false),
-})
+});
 
 export default function SearchPage() {
-  const router = useRouter()
-  const { data: session } = useSession()
-  const { toast } = useToast()
-  const [searchResults, setSearchResults] = useState([])
-  const [totalCount, setTotalCount] = useState(0)
-  const [loading, setLoading] = useState(false)
-  const [currentPage, setCurrentPage] = useState(1)
-  const [hasNextPage, setHasNextPage] = useState(false)
+  const router = useRouter();
+  const { data: session } = useSession();
+  const { toast } = useToast();
+  const [searchResults, setSearchResults] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasNextPage, setHasNextPage] = useState(false);
 
   // Initialiser le formulaire avec react-hook-form
   const form = useForm<z.infer<typeof searchFormSchema>>({
@@ -67,87 +89,93 @@ export default function SearchPage() {
       order: "desc",
       includeArchived: false,
     },
-  })
+  });
 
   // Fonction de recherche
-  const searchRepositories = async (values: z.infer<typeof searchFormSchema>, page = 1) => {
-    setLoading(true)
+  const searchRepositories = async (
+    values: z.infer<typeof searchFormSchema>,
+    page = 1
+  ) => {
+    setLoading(true);
 
     try {
       // Construire la requête de recherche
-      let searchQuery = values.query
+      let searchQuery = values.query;
 
       // Ajouter les filtres
       if (values.language) {
-        searchQuery += ` language:${values.language}`
+        searchQuery += ` language:${values.language}`;
       }
 
       if (values.minStars > 0) {
-        searchQuery += ` stars:>=${values.minStars}`
+        searchQuery += ` stars:>=${values.minStars}`;
       }
 
       if (!values.includeArchived) {
-        searchQuery += " archived:false"
+        searchQuery += " archived:false";
       }
 
       // Effectuer la recherche
       const response = await fetchWithAuth(
         `https://api.github.com/search/repositories?q=${encodeURIComponent(
-          searchQuery,
-        )}&sort=${values.sort}&order=${values.order}&per_page=10&page=${page}`,
-      )
+          searchQuery
+        )}&sort=${values.sort}&order=${values.order}&per_page=10&page=${page}`
+      );
 
       if (!response.ok) {
-        throw new Error(`Erreur lors de la recherche: ${response.status}`)
+        throw new Error(`Erreur lors de la recherche: ${response.status}`);
       }
 
-      const data = await response.json()
+      const data = await response.json();
 
       // Mettre à jour les résultats
-      setSearchResults(data.items || [])
-      setTotalCount(data.total_count || 0)
-      setHasNextPage((data.items || []).length === 10)
-      setCurrentPage(page)
+      setSearchResults(data.items || []);
+      setTotalCount(data.total_count || 0);
+      setHasNextPage((data.items || []).length === 10);
+      setCurrentPage(page);
 
       // Afficher un toast avec le nombre de résultats
       toast({
         title: "Recherche terminée",
         description: `${data.total_count} dépôts trouvés`,
-      })
+      });
     } catch (error) {
-      console.error("Erreur lors de la recherche:", error)
+      console.error("Erreur lors de la recherche:", error);
       toast({
         variant: "destructive",
         title: "Erreur de recherche",
-        description: error.message || "Une erreur s'est produite lors de la recherche",
-      })
+        description:
+          error instanceof Error
+            ? error.message
+            : "Une erreur s'est produite lors de la recherche",
+      });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   // Gérer la soumission du formulaire
   const onSubmit = (values: z.infer<typeof searchFormSchema>) => {
-    searchRepositories(values)
-  }
+    searchRepositories(values);
+  };
 
   // Gérer la pagination
   const handleNextPage = () => {
     if (hasNextPage) {
-      searchRepositories(form.getValues(), currentPage + 1)
+      searchRepositories(form.getValues(), currentPage + 1);
     }
-  }
+  };
 
   const handlePreviousPage = () => {
     if (currentPage > 1) {
-      searchRepositories(form.getValues(), currentPage - 1)
+      searchRepositories(form.getValues(), currentPage - 1);
     }
-  }
+  };
 
   // Gérer la sélection d'un dépôt
   const handleSelectRepository = (repoUrl: string) => {
-    router.push(`/?url=${encodeURIComponent(repoUrl)}`)
-  }
+    router.push(`/?url=${encodeURIComponent(repoUrl)}`);
+  };
 
   return (
     <main className="container mx-auto py-8 px-4">
@@ -182,9 +210,14 @@ export default function SearchPage() {
                     <FormItem>
                       <FormLabel>Terme de recherche</FormLabel>
                       <FormControl>
-                        <Input placeholder="Exemple: nextjs, react, state management..." {...field} />
+                        <Input
+                          placeholder="Exemple: nextjs, react, state management..."
+                          {...field}
+                        />
                       </FormControl>
-                      <FormDescription>Recherchez par nom, description ou mots-clés</FormDescription>
+                      <FormDescription>
+                        Recherchez par nom, description ou mots-clés
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -196,7 +229,10 @@ export default function SearchPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Langage</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Tous les langages" />
@@ -211,7 +247,9 @@ export default function SearchPage() {
                           ))}
                         </SelectContent>
                       </Select>
-                      <FormDescription>Filtrer par langage de programmation</FormDescription>
+                      <FormDescription>
+                        Filtrer par langage de programmation
+                      </FormDescription>
                     </FormItem>
                   )}
                 />
@@ -223,7 +261,9 @@ export default function SearchPage() {
                   name="minStars"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nombre minimum d&apos;étoiles: {field.value}</FormLabel>
+                      <FormLabel>
+                        Nombre minimum d&apos;étoiles: {field.value}
+                      </FormLabel>
                       <FormControl>
                         <Slider
                           min={0}
@@ -233,7 +273,9 @@ export default function SearchPage() {
                           onValueChange={(vals) => field.onChange(vals[0])}
                         />
                       </FormControl>
-                      <FormDescription>Filtrer par popularité (nombre d&apos;étoiles)</FormDescription>
+                      <FormDescription>
+                        Filtrer par popularité (nombre d&apos;étoiles)
+                      </FormDescription>
                     </FormItem>
                   )}
                 />
@@ -245,7 +287,10 @@ export default function SearchPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Trier par</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Étoiles" />
@@ -255,7 +300,9 @@ export default function SearchPage() {
                             <SelectItem value="stars">Étoiles</SelectItem>
                             <SelectItem value="forks">Forks</SelectItem>
                             <SelectItem value="updated">Mise à jour</SelectItem>
-                            <SelectItem value="help-wanted-issues">Issues ouvertes</SelectItem>
+                            <SelectItem value="help-wanted-issues">
+                              Issues ouvertes
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                       </FormItem>
@@ -268,7 +315,10 @@ export default function SearchPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Ordre</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Décroissant" />
@@ -291,11 +341,16 @@ export default function SearchPage() {
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                     <FormControl>
-                      <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
                     </FormControl>
                     <div className="space-y-1 leading-none">
                       <FormLabel>Inclure les dépôts archivés</FormLabel>
-                      <FormDescription>Par défaut, seuls les dépôts actifs sont affichés</FormDescription>
+                      <FormDescription>
+                        Par défaut, seuls les dépôts actifs sont affichés
+                      </FormDescription>
                     </div>
                   </FormItem>
                 )}
@@ -313,30 +368,47 @@ export default function SearchPage() {
       {searchResults.length > 0 && (
         <div className="space-y-4">
           <div className="flex justify-between items-center">
-            <h2 className="text-xl font-semibold">Résultats ({totalCount > 1000 ? "1000+" : totalCount})</h2>
+            <h2 className="text-xl font-semibold">
+              Résultats ({totalCount > 1000 ? "1000+" : totalCount})
+            </h2>
             <div className="flex items-center gap-2">
-              <Button variant="outline" onClick={handlePreviousPage} disabled={currentPage === 1 || loading}>
+              <Button
+                variant="outline"
+                onClick={handlePreviousPage}
+                disabled={currentPage === 1 || loading}
+              >
                 Précédent
               </Button>
               <span className="text-sm">Page {currentPage}</span>
-              <Button variant="outline" onClick={handleNextPage} disabled={!hasNextPage || loading}>
+              <Button
+                variant="outline"
+                onClick={handleNextPage}
+                disabled={!hasNextPage || loading}
+              >
                 Suivant
               </Button>
             </div>
           </div>
 
-          <SearchResults repositories={searchResults} onSelectRepository={handleSelectRepository} />
+          <SearchResults
+            repositories={searchResults}
+            onSelectRepository={handleSelectRepository}
+          />
         </div>
       )}
 
       {searchResults.length === 0 && form.formState.isSubmitted && !loading && (
         <Card>
           <CardContent className="py-8 text-center">
-            <p className="text-muted-foreground">Aucun résultat trouvé pour cette recherche.</p>
-            <p className="text-sm text-muted-foreground mt-2">Essayez de modifier vos critères de recherche.</p>
+            <p className="text-muted-foreground">
+              Aucun résultat trouvé pour cette recherche.
+            </p>
+            <p className="text-sm text-muted-foreground mt-2">
+              Essayez de modifier vos critères de recherche.
+            </p>
           </CardContent>
         </Card>
       )}
     </main>
-  )
+  );
 }

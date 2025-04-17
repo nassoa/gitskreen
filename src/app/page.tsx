@@ -29,7 +29,16 @@ export default function Home() {
   const searchParams = useSearchParams();
   const { toast } = useToast();
   const [repoUrl, setRepoUrl] = useState("");
-  const [repoData, setRepoData] = useState(null);
+  interface RepoData {
+    info: any;
+    branches: any;
+    languages: any;
+    commits: any;
+    owner: string;
+    repo: string;
+  }
+
+  const [repoData, setRepoData] = useState<RepoData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -117,11 +126,18 @@ export default function Home() {
         description: `${repoInfo.full_name} a été chargé avec succès.`,
       });
     } catch (error) {
-      setError(error.message);
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError("Une erreur inconnue s'est produite.");
+      }
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: error.message,
+        description:
+          error instanceof Error
+            ? error.message
+            : "Une erreur inconnue s'est produite.",
       });
     } finally {
       setLoading(false);
