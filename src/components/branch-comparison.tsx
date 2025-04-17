@@ -33,10 +33,43 @@ import {
 } from "lucide-react";
 import { fetchWithAuth } from "@/lib/github";
 
-export default function BranchComparison({ repoData }) {
+interface RepoData {
+  info: {
+    default_branch: string;
+  };
+  branches: { name: string }[];
+  owner: string;
+  repo: string;
+}
+
+export default function BranchComparison({ repoData }: { repoData: RepoData }) {
   const [baseBranch, setBaseBranch] = useState("");
   const [compareBranch, setCompareBranch] = useState("");
-  const [comparisonData, setComparisonData] = useState(null);
+  interface ComparisonData {
+    files?: {
+      filename: string;
+      additions: number;
+      deletions: number;
+      changes: number;
+      status: string;
+      patch?: string;
+    }[];
+    total_commits?: number;
+    stats?: { additions: number; deletions: number };
+    status?: string;
+    ahead_by?: number;
+    behind_by?: number;
+    merge_base_commit?: { sha: string };
+    commits?: {
+      sha: string;
+      commit: { message: string; author: { name: string; date: string } };
+      html_url: string;
+    }[];
+  }
+
+  const [comparisonData, setComparisonData] = useState<ComparisonData | null>(
+    null
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -92,8 +125,9 @@ export default function BranchComparison({ repoData }) {
     } catch (error) {
       console.error("Erreur lors de la comparaison des branches:", error);
       setError(
-        error.message ||
-          "Une erreur s'est produite lors de la comparaison des branches."
+        error instanceof Error
+          ? error.message
+          : "Une erreur s'est produite lors de la comparaison des branches."
       );
     } finally {
       setLoading(false);
@@ -101,8 +135,8 @@ export default function BranchComparison({ repoData }) {
   };
 
   // Formater la date
-  const formatDate = (dateString) => {
-    const options = {
+  const formatDate = (dateString: string): string => {
+    const options: Intl.DateTimeFormatOptions = {
       year: "numeric",
       month: "long",
       day: "numeric",
@@ -113,7 +147,13 @@ export default function BranchComparison({ repoData }) {
   };
 
   // Fonction pour déterminer la couleur de la ligne de code
-  const getLineClass = (type) => {
+  interface LineClassMap {
+    addition: string;
+    deletion: string;
+    context: string;
+  }
+
+  const getLineClass = (type: keyof LineClassMap): string => {
     switch (type) {
       case "addition":
         return "bg-green-50 dark:bg-green-950 text-green-800 dark:text-green-300";
@@ -125,26 +165,35 @@ export default function BranchComparison({ repoData }) {
   };
 
   // Fonction pour rendre les lignes de code avec coloration syntaxique
-  const renderDiffContent = (patch) => {
+  interface DiffLine {
+    type: "addition" | "deletion" | "context";
+    content: string;
+  }
+
+  const renderDiffContent = (patch: string | null): JSX.Element | null => {
     if (!patch) return null;
 
-    const lines = patch.split("\n");
-    return lines.map((line, index) => {
-      let type = "context";
-      if (line.startsWith("+")) type = "addition";
-      if (line.startsWith("-")) type = "deletion";
+    const lines: string[] = patch.split("\n");
+    return (
+      <>
+        {lines.map((line: string, index: number) => {
+          let type: DiffLine["type"] = "context";
+          if (line.startsWith("+")) type = "addition";
+          if (line.startsWith("-")) type = "deletion";
 
-      return (
-        <div
-          key={index}
-          className={`font-mono text-xs whitespace-pre-wrap ${getLineClass(
-            type
-          )} px-2 py-0.5`}
-        >
-          {line}
-        </div>
-      );
-    });
+          return (
+            <div
+              key={index}
+              className={`font-mono text-xs whitespace-pre-wrap ${getLineClass(
+                type
+              )} px-2 py-0.5`}
+            >
+              {line}
+            </div>
+          );
+        })}
+      </>
+    );
   };
 
   return (
@@ -304,7 +353,7 @@ export default function BranchComparison({ repoData }) {
                         0,
                         7
                       )} et ${
-                        comparisonData.commits[
+                        comparisonData.commits?.[
                           comparisonData.commits.length - 1
                         ]?.sha.substring(0, 7) || ""
                       }`}
@@ -448,7 +497,7 @@ export default function BranchComparison({ repoData }) {
                           <Separator />
                           <ScrollArea className="max-h-[300px] overflow-y-auto">
                             <div className="p-1">
-                              {renderDiffContent(file.patch)}
+                              {renderDiffContent(file.patch ?? null)}
                             </div>
                           </ScrollArea>
                         </div>

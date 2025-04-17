@@ -15,7 +15,21 @@ import CommitActivityChart from "./charts/commit-activity-chart";
 import ContributorsBubbleChart from "./charts/contributors-bubble-chart";
 import RepoRadarChart from "./charts/repo-radar-chart";
 
-export default function RepoStatistics({ repoData }) {
+interface RepoData {
+  commits: { commit: { author: { date: string; name?: string } } }[];
+  branches: any[];
+  languages: Record<string, number>;
+  info: {
+    open_issues_count: number;
+    stargazers_count: number;
+    forks_count: number;
+    watchers_count: number;
+  };
+  owner: string;
+  repo: string;
+}
+
+export default function RepoStatistics({ repoData }: { repoData: RepoData }) {
   const [commitsByMonth, setCommitsByMonth] = useState({});
 
   useEffect(() => {
@@ -26,7 +40,7 @@ export default function RepoStatistics({ repoData }) {
   // Process commits by month
   const processCommitsByMonth = () => {
     const commits = repoData.commits;
-    const commitMonths = {};
+    const commitMonths: Record<string, number> = {};
 
     commits.forEach((commit) => {
       const date = new Date(commit.commit.author.date);
@@ -43,7 +57,7 @@ export default function RepoStatistics({ repoData }) {
 
     // Sort by date
     const sortedMonths = Object.keys(commitMonths).sort();
-    const sortedCommitsByMonth = {};
+    const sortedCommitsByMonth: Record<string, number> = {};
 
     sortedMonths.forEach((month) => {
       sortedCommitsByMonth[month] = commitMonths[month];
@@ -53,9 +67,16 @@ export default function RepoStatistics({ repoData }) {
   };
 
   // Format month for display
-  const formatMonth = (monthYear) => {
-    const [year, month] = monthYear.split("-");
-    const date = new Date(Number.parseInt(year), Number.parseInt(month) - 1, 1);
+  const formatMonth = (monthYear: string): string => {
+    const [year, month]: [string, string] = monthYear.split("-") as [
+      string,
+      string
+    ];
+    const date: Date = new Date(
+      Number.parseInt(year),
+      Number.parseInt(month) - 1,
+      1
+    );
     return date.toLocaleDateString("fr-FR", {
       month: "short",
       year: "numeric",
@@ -195,7 +216,18 @@ export default function RepoStatistics({ repoData }) {
         </TabsContent>
 
         <TabsContent value="commits" className="mt-6">
-          <CommitActivityChart commits={repoData.commits} />
+          <CommitActivityChart
+            commits={repoData.commits.map((commit) => ({
+              ...commit,
+              commit: {
+                ...commit.commit,
+                author: {
+                  ...commit.commit.author,
+                  name: commit.commit.author.name || "Unknown",
+                },
+              },
+            }))}
+          />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
             <Card>
@@ -232,7 +264,7 @@ export default function RepoStatistics({ repoData }) {
                             {formatMonth(month)}
                           </div>
                           <div className="text-xs font-medium mt-1">
-                            {count}
+                            {count as number}
                           </div>
                         </div>
                       );

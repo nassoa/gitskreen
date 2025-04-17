@@ -1,15 +1,48 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { GitBranch, GitFork, Star, Clock, Eye, Calendar } from "lucide-react"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { GitBranch, GitFork, Star, Clock, Eye, Calendar } from "lucide-react";
 
-export default function RepoSummary({ repoData }) {
-  const { info } = repoData
+interface RepoData {
+  info: {
+    name: string;
+    full_name: string;
+    description?: string;
+    language?: string;
+    stargazers_count: number;
+    forks_count: number;
+    watchers_count: number;
+    created_at: string;
+    updated_at: string;
+    homepage?: string;
+    html_url: string;
+  };
+  branches: { name: string }[];
+}
+
+export default function RepoSummary({ repoData }: { repoData: RepoData }) {
+  const { info } = repoData;
 
   // Format date
-  const formatDate = (dateString) => {
-    const options = { year: "numeric", month: "long", day: "numeric" }
-    return new Date(dateString).toLocaleDateString("fr-FR", options)
+  interface FormatDateOptions {
+    year: "numeric";
+    month: "long";
+    day: "numeric";
   }
+
+  const formatDate = (dateString: string): string => {
+    const options: FormatDateOptions = {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    };
+    return new Date(dateString).toLocaleDateString("fr-FR", options);
+  };
 
   return (
     <div className="grid gap-6 mt-6">
@@ -18,7 +51,9 @@ export default function RepoSummary({ repoData }) {
           <div className="flex justify-between items-start">
             <div>
               <CardTitle className="text-2xl">{info.name}</CardTitle>
-              <CardDescription className="text-lg mt-1">{info.full_name}</CardDescription>
+              <CardDescription className="text-lg mt-1">
+                {info.full_name}
+              </CardDescription>
             </div>
             {info.language && (
               <Badge variant="outline" className="ml-2">
@@ -28,7 +63,9 @@ export default function RepoSummary({ repoData }) {
           </div>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground mb-6">{info.description || "Aucune description disponible"}</p>
+          <p className="text-muted-foreground mb-6">
+            {info.description || "Aucune description disponible"}
+          </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="flex items-center gap-2">
@@ -77,12 +114,17 @@ export default function RepoSummary({ repoData }) {
           )}
 
           <div className="mt-6">
-            <a href={info.html_url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+            <a
+              href={info.html_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-500 hover:underline"
+            >
               Voir sur GitHub →
             </a>
           </div>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

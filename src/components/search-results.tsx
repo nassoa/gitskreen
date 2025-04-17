@@ -1,31 +1,74 @@
-"use client"
+"use client";
 
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Star, GitFork, Eye, Calendar, Code, ArrowRight } from "lucide-react"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Star, GitFork, Eye, Calendar, Code, ArrowRight } from "lucide-react";
 
-export default function SearchResults({ repositories, onSelectRepository }) {
+interface SearchResultsProps {
+  repositories: Array<{
+    id: number;
+    html_url: string;
+    full_name: string;
+    description: string | null;
+    archived: boolean;
+    stargazers_count: number;
+    forks_count: number;
+    watchers_count: number;
+    updated_at: string;
+    language: string | null;
+    topics: string[];
+    owner: {
+      html_url: string;
+      login: string;
+    };
+  }>;
+  onSelectRepository: (url: string) => void;
+}
+
+export default function SearchResults({
+  repositories,
+  onSelectRepository,
+}: SearchResultsProps) {
   // Formater la date
-  const formatDate = (dateString) => {
-    const options = { year: "numeric", month: "long", day: "numeric" }
-    return new Date(dateString).toLocaleDateString("fr-FR", options)
-  }
+  const formatDate = (dateString: string) => {
+    const options = {
+      year: "numeric" as const,
+      month: "long" as const,
+      day: "numeric" as const,
+    };
+    return new Date(dateString).toLocaleDateString("fr-FR", options);
+  };
 
   // Formater le nombre (ajouter des séparateurs de milliers)
-  const formatNumber = (num) => {
-    return num.toLocaleString("fr-FR")
-  }
+  const formatNumber = (num: number): string => {
+    return num.toLocaleString("fr-FR");
+  };
 
   return (
     <div className="space-y-4">
       {repositories.map((repo) => (
-        <Card key={repo.id} className="overflow-hidden transition-all hover:shadow-md">
+        <Card
+          key={repo.id}
+          className="overflow-hidden transition-all hover:shadow-md"
+        >
           <CardHeader className="pb-2">
             <div className="flex justify-between items-start">
               <div>
                 <CardTitle className="text-xl">
-                  <a href={repo.html_url} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                  <a
+                    href={repo.html_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:underline"
+                  >
                     {repo.full_name}
                   </a>
                 </CardTitle>
@@ -47,19 +90,27 @@ export default function SearchResults({ repositories, onSelectRepository }) {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 my-2">
               <div className="flex items-center gap-2">
                 <Star className="h-4 w-4 text-yellow-500" />
-                <span className="text-sm">{formatNumber(repo.stargazers_count)} étoiles</span>
+                <span className="text-sm">
+                  {formatNumber(repo.stargazers_count)} étoiles
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <GitFork className="h-4 w-4 text-blue-500" />
-                <span className="text-sm">{formatNumber(repo.forks_count)} forks</span>
+                <span className="text-sm">
+                  {formatNumber(repo.forks_count)} forks
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <Eye className="h-4 w-4 text-purple-500" />
-                <span className="text-sm">{formatNumber(repo.watchers_count)} observateurs</span>
+                <span className="text-sm">
+                  {formatNumber(repo.watchers_count)} observateurs
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <Calendar className="h-4 w-4 text-green-500" />
-                <span className="text-sm">Mis à jour le {formatDate(repo.updated_at)}</span>
+                <span className="text-sm">
+                  Mis à jour le {formatDate(repo.updated_at)}
+                </span>
               </div>
             </div>
 
@@ -90,7 +141,11 @@ export default function SearchResults({ repositories, onSelectRepository }) {
                 {repo.owner.login}
               </a>
             </div>
-            <Button variant="outline" size="sm" onClick={() => onSelectRepository(repo.html_url)}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onSelectRepository(repo.html_url)}
+            >
               Explorer
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
@@ -98,5 +153,5 @@ export default function SearchResults({ repositories, onSelectRepository }) {
         </Card>
       ))}
     </div>
-  )
+  );
 }

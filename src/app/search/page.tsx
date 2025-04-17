@@ -181,10 +181,10 @@ export default function SearchPage() {
     <main className="container mx-auto py-8 px-4">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Recherche de Dépôts GitHub</h1>
-        <div className="flex items-center gap-4">
+        {/* <div className="flex items-center gap-4">
           <ApiStatus />
           <AuthStatus />
-        </div>
+        </div> */}
       </div>
 
       <Card className="mb-8">

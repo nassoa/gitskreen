@@ -1,66 +1,92 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { AlertCircle, FileText } from "lucide-react"
-import { fetchWithAuth } from "@/lib/github"
-import ReactMarkdown from "react-markdown"
-import remarkGfm from "remark-gfm"
-import rehypeRaw from "rehype-raw"
-import rehypeSanitize from "rehype-sanitize"
+import { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle, FileText } from "lucide-react";
+import { fetchWithAuth } from "@/lib/github";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
+import rehypeSanitize from "rehype-sanitize";
 
-export default function RepoReadme({ repoData }) {
-  const [readme, setReadme] = useState("")
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState("")
+interface RepoData {
+  owner: string;
+  repo: string;
+  info: {
+    default_branch: string;
+  };
+}
+
+export default function RepoReadme({ repoData }: { repoData: RepoData }) {
+  const [readme, setReadme] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchReadme = async () => {
-      if (!repoData) return
+      if (!repoData) return;
 
       try {
-        setLoading(true)
-        setError("")
+        setLoading(true);
+        setError("");
 
-        const { owner, repo } = repoData
-        const response = await fetchWithAuth(`https://api.github.com/repos/${owner}/${repo}/readme`)
+        const { owner, repo } = repoData;
+        const response = await fetchWithAuth(
+          `https://api.github.com/repos/${owner}/${repo}/readme`
+        );
 
         if (!response.ok) {
           if (response.status === 404) {
-            throw new Error("Ce dépôt ne possède pas de fichier README.")
+            throw new Error("Ce dépôt ne possède pas de fichier README.");
           } else {
-            throw new Error(`Erreur lors de la récupération du README: ${response.status}`)
+            throw new Error(
+              `Erreur lors de la récupération du README: ${response.status}`
+            );
           }
         }
 
-        const data = await response.json()
+        const data = await response.json();
 
         // Le contenu est encodé en base64
-        const decodedContent = atob(data.content)
-        setReadme(decodedContent)
+        const decodedContent = atob(data.content);
+        setReadme(decodedContent);
       } catch (error) {
-        console.error("Erreur lors du chargement du README:", error)
-        setError(error.message)
+        console.error("Erreur lors du chargement du README:", error);
+        if (error instanceof Error) {
+          setError(error.message);
+        } else {
+          setError("Une erreur inconnue s'est produite.");
+        }
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchReadme()
-  }, [repoData])
+    fetchReadme();
+  }, [repoData]);
 
   // Fonction pour transformer les URLs relatives des images en URLs absolues
-  const transformImageUrls = (src) => {
+  const transformImageUrls = (src: string | undefined): string | undefined => {
+    if (!src) {
+      return undefined;
+    }
+
     if (src.startsWith("http")) {
-      return src
+      return src;
     }
 
     // Construire l'URL absolue pour les images relatives
-    const baseUrl = `https://github.com/${repoData.owner}/${repoData.repo}/raw/${repoData.info.default_branch}`
-    return `${baseUrl}/${src}`
-  }
+    const baseUrl = `https://github.com/${repoData.owner}/${repoData.repo}/raw/${repoData.info.default_branch}`;
+    return `${baseUrl}/${src}`;
+  };
 
   return (
     <Card className="mt-6">
@@ -101,22 +127,39 @@ export default function RepoReadme({ repoData }) {
                   />
                 ),
                 a: ({ node, ...props }) => (
-                  <a {...props} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline" />
+                  <a
+                    {...props}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-500 hover:underline"
+                  />
                 ),
                 pre: ({ node, ...props }) => (
-                  <pre {...props} className="bg-muted p-4 rounded-md overflow-x-auto text-sm my-4" />
+                  <pre
+                    {...props}
+                    className="bg-muted p-4 rounded-md overflow-x-auto text-sm my-4"
+                  />
                 ),
-                code: ({ node, inline, ...props }) =>
-                  inline ? <code {...props} className="bg-muted px-1 py-0.5 rounded text-sm" /> : <code {...props} />,
+                code: ({ node, ...props }) => (
+                  <code
+                    {...props}
+                    className="bg-muted px-1 py-0.5 rounded text-sm"
+                  />
+                ),
                 table: ({ node, ...props }) => (
                   <div className="overflow-x-auto my-4">
                     <table {...props} className="border-collapse w-full" />
                   </div>
                 ),
                 th: ({ node, ...props }) => (
-                  <th {...props} className="border border-border px-4 py-2 bg-muted font-medium text-left" />
+                  <th
+                    {...props}
+                    className="border border-border px-4 py-2 bg-muted font-medium text-left"
+                  />
                 ),
-                td: ({ node, ...props }) => <td {...props} className="border border-border px-4 py-2" />,
+                td: ({ node, ...props }) => (
+                  <td {...props} className="border border-border px-4 py-2" />
+                ),
               }}
             >
               {readme}
@@ -125,5 +168,5 @@ export default function RepoReadme({ repoData }) {
         )}
       </CardContent>
     </Card>
-  )
+  );
 }
